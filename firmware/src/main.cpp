@@ -12,7 +12,9 @@ const char* ssid = "RAGU";
 const char* password = "234567890";
 
 // ===== Server URL (UPDATED) =====
-const char* serverUrl = "http://10.247.104.198:3000/update-sensor";
+// For local testing, use the IP of your computer. For deployment, use your domain/IP.
+const char* serverUrl = "http://10.247.104.198:5000/api/vehicle/update"; 
+const char* deviceKey = "YOUR_DEVICE_SECRET_KEY"; // Get this from your Vehicle record in MongoDB
 
 // ===== Pin Definitions =====
 #define GPS_RX 16
@@ -69,6 +71,7 @@ void loop() {
 
   double lat = gps.location.isValid() ? gps.location.lat() : 0.0;
   double lon = gps.location.isValid() ? gps.location.lng() : 0.0;
+  float speed = gps.speed.isValid() ? gps.speed.kmph() : 0.0;
 
   int mqAnalog = analogRead(MQ3_PIN);
   int irValue = digitalRead(IR_PIN);
@@ -79,10 +82,13 @@ void loop() {
     HTTPClient http;
     http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
+    // This header is REQUIRED for the backend to recognize your device
+    http.addHeader("x-device-key", deviceKey);
 
     String payload = "{";
     payload += "\"latitude\":" + String(lat, 6) + ",";
     payload += "\"longitude\":" + String(lon, 6) + ",";
+    payload += "\"speed\":" + String(speed, 2) + ",";
     payload += "\"accelX\":" + String(a.acceleration.x, 2) + ",";
     payload += "\"accelY\":" + String(a.acceleration.y, 2) + ",";
     payload += "\"accelZ\":" + String(a.acceleration.z, 2) + ",";
