@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
-import { MessageSquare, Send, X, ChevronUp, ChevronDown } from 'lucide-react';
+import React, { useState, useRef, useEffect } from 'react';
+import { MessageSquare, Send, X, ChevronUp, ChevronDown, Loader2 } from 'lucide-react';
 import { chatResponses } from '../../data/mockData';
+import { sendMessage as sendChatMessage } from '../../services/chatService';
 import './ChatAssistant.css';
 
 const ChatAssistant = ({ role = 'user' }) => {
@@ -9,23 +10,44 @@ const ChatAssistant = ({ role = 'user' }) => {
         { id: 1, text: role === 'user' ? chatResponses.user : chatResponses.admin, sender: 'assistant' }
     ]);
     const [input, setInput] = useState('');
+    const [isLoading, setIsLoading] = useState(false);
+    const messagesEndRef = useRef(null);
 
-    const handleSend = (e) => {
+    const scrollToBottom = () => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    };
+
+    useEffect(() => {
+        if (isOpen) scrollToBottom();
+    }, [messages, isOpen]);
+
+    const handleSend = async (e) => {
         e.preventDefault();
-        if (!input.trim()) return;
+        if (!input.trim() || isLoading) return;
 
-        const userMsg = { id: Date.now(), text: input, sender: 'user' };
-        setMessages([...messages, userMsg]);
+        const userMsgText = input.trim();
+        const userMsg = { id: Date.now(), text: userMsgText, sender: 'user' };
+        setMessages(prev => [...prev, userMsg]);
         setInput('');
+        setIsLoading(true);
 
-        // Simulate response
-        setTimeout(() => {
+        try {
+            const reply = await sendChatMessage(userMsgText);
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
-                text: "I am processing your request. This is a placeholder response.",
+                text: reply,
                 sender: 'assistant'
             }]);
-        }, 1000);
+        } catch (error) {
+            setMessages(prev => [...prev, {
+                id: Date.now() + 1,
+                text: "Sorry, I'm having trouble connecting to the AI. Please make sure the API key is set correctly in the backend.",
+                sender: 'assistant',
+                isError: true
+            }]);
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
@@ -49,21 +71,29 @@ const ChatAssistant = ({ role = 'user' }) => {
 
                     <div className="chat-messages">
                         {messages.map((msg) => (
-                            <div key={msg.id} className={`message-bubble ${msg.sender}`}>
+                            <div key={msg.id} className={`message-bubble ${msg.sender} ${msg.isError ? 'error' : ''}`}>
                                 {msg.text}
                             </div>
                         ))}
+                        {isLoading && (
+                            <div className="message-bubble assistant loading">
+                                <Loader2 className="animate-spin" size={16} />
+                                <span>Assistant is thinking...</span>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
                     </div>
 
                     <form className="chat-input" onSubmit={handleSend}>
                         <input
                             type="text"
-                            placeholder="Type a message..."
+                            placeholder={isLoading ? "Please wait..." : "Type a message..."}
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
+                            disabled={isLoading}
                         />
-                        <button type="submit" disabled={!input.trim()}>
-                            <Send size={18} />
+                        <button type="submit" disabled={!input.trim() || isLoading}>
+                            {isLoading ? <Loader2 className="animate-spin" size={18} /> : <Send size={18} />}
                         </button>
                     </form>
                 </div>

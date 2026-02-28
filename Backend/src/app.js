@@ -6,6 +6,7 @@ const rateLimit = require("express-rate-limit");
 const authRoutes = require("./routes/authRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const vehicleRoutes = require("./routes/vehicleRoutes");
+const chatRoutes = require("./routes/chatRoutes");
 
 const app = express();
 
@@ -36,6 +37,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/vehicle", vehicleRoutes);
+app.use("/api/chat", chatRoutes);
 
 // Rate limiter (login protection)
 const limiter = rateLimit({

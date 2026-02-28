@@ -136,6 +136,34 @@
     justify-content: center;
 }
 
+.message-bubble.assistant.loading {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.message-bubble.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fecaca;
+}
+
+.animate-spin {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .chat-input button:disabled {
     opacity: 0.5;
     cursor: not-allowed;
