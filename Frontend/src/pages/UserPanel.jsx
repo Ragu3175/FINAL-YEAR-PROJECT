@@ -1,9 +1,10 @@
-import React from 'react';
-import { vehicleData } from '../data/mockData';
-import { MapPin, Zap, Thermometer, Clock, Download, Trash2, ArrowRight, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { vehicleData as initialMockData } from '../data/mockData';
+import { MapPin, Zap, Thermometer, Clock, Download, Trash2, ArrowRight, AlertTriangle, Plus, Key, Copy, Check } from 'lucide-react';
 import TelemetryCharts from '../components/charts/TelemetryCharts';
 import ChatAssistant from '../components/chat/ChatAssistant';
 import { initiateSocketConnection, subscribeToTelemetry, disconnectSocket } from '../services/socketService';
+import vehicleService from '../services/vehicleService';
 import './UserPanel.css';
 
 // Sub-components can be moved to separate files later if they grow
@@ -20,10 +21,33 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
 );
 
 const UserPanel = () => {
-    const [liveVehicleData, setLiveVehicleData] = React.useState(vehicleData);
+    const [liveVehicleData, setLiveVehicleData] = useState(initialMockData);
     const { telemetry, sensors, timeSeries } = liveVehicleData;
 
-    React.useEffect(() => {
+    // Vehicle Registration State
+    const [hasVehicle, setHasVehicle] = useState(true);
+    const [showRegisterModal, setShowRegisterModal] = useState(false);
+    const [vehicleNumber, setVehicleNumber] = useState('');
+    const [registrationLoading, setRegistrationLoading] = useState(false);
+    const [registeredVehicle, setRegisteredVehicle] = useState(null);
+    const [copied, setCopied] = useState(false);
+
+    useEffect(() => {
+        const checkVehicleStatus = async () => {
+            try {
+                const vehicle = await vehicleService.getVehicleStatus();
+                if (!vehicle) {
+                    setHasVehicle(false);
+                } else {
+                    setHasVehicle(true);
+                    // Could also set initial data here based on DB
+                }
+            } catch (error) {
+                console.error("Error checking vehicle status:", error);
+            }
+        };
+
+        checkVehicleStatus();
         initiateSocketConnection();
 
         subscribeToTelemetry((err, data) => {
@@ -68,6 +92,98 @@ const UserPanel = () => {
 
         return () => disconnectSocket();
     }, []);
+
+    const handleRegister = async (e) => {
+        e.preventDefault();
+        setRegistrationLoading(true);
+        try {
+            const result = await vehicleService.registerVehicle(vehicleNumber);
+            setRegisteredVehicle(result.vehicle);
+            setHasVehicle(true);
+        } catch (error) {
+            alert(error.message);
+        } finally {
+            setRegistrationLoading(false);
+        }
+    };
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(registeredVehicle.deviceSecretKey);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
+    if (!hasVehicle && !registeredVehicle) {
+        return (
+            <div className="no-vehicle-container">
+                <div className="setup-card">
+                    <h2>Welcome to SafeDrive AI</h2>
+                    <p>To get started, please register your vehicle to generate your hardware credentials.</p>
+                    <button className="btn btn-primary lg" onClick={() => setShowRegisterModal(true)}>
+                        <Plus size={20} />
+                        Register New Vehicle
+                    </button>
+                </div>
+
+                {showRegisterModal && (
+                    <div className="modal-overlay">
+                        <div className="modal-content">
+                            <h3>Register Vehicle</h3>
+                            <form onSubmit={handleRegister}>
+                                <div className="input-group">
+                                    <label>Vehicle Number Plate</label>
+                                    <input
+                                        type="text"
+                                        value={vehicleNumber}
+                                        onChange={(e) => setVehicleNumber(e.target.value)}
+                                        placeholder="e.g. TN-01-AB-1234"
+                                        required
+                                    />
+                                </div>
+                                <div className="modal-actions">
+                                    <button type="button" className="btn btn-outline" onClick={() => setShowRegisterModal(false)}>Cancel</button>
+                                    <button type="submit" className="btn btn-primary" disabled={registrationLoading}>
+                                        {registrationLoading ? 'Registering...' : 'Register'}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                )}
+            </div>
+        );
+    }
+
+    if (registeredVehicle) {
+        return (
+            <div className="success-container">
+                <div className="setup-card success">
+                    <div className="icon-success"><Check size={40} /></div>
+                    <h2>Vehicle Registered Successfully!</h2>
+                    <p>Please update your ESP32 `main.cpp` code with these credentials:</p>
+
+                    <div className="credentials-box">
+                        <div className="cred-row">
+                            <span>Device ID:</span>
+                            <code>{registeredVehicle.deviceId}</code>
+                        </div>
+                        <div className="cred-row">
+                            <span>Secret Key:</span>
+                            <code>{registeredVehicle.deviceSecretKey}</code>
+                            <button className="btn-icon" onClick={copyToClipboard} title="Copy Key">
+                                {copied ? <Check size={16} color="green" /> : <Copy size={16} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    <p className="warning-text">⚠️ Keep this key secret. You will not be able to see it again.</p>
+                    <button className="btn btn-primary" onClick={() => setRegisteredVehicle(null)}>
+                        Go to Dashboard
+                    </button>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="dashboard-grid">

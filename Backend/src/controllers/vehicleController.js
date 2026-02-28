@@ -1,6 +1,44 @@
 const Vehicle = require('../models/Vehicle');
 const Violation = require('../models/Violation');
 const { calculateRisk } = require('../services/riskService');
+const crypto = require('crypto');
+
+exports.registerVehicle = async (req, res) => {
+    try {
+        const { vehicleNumber } = req.body;
+        if (!vehicleNumber) {
+            return res.status(400).json({ message: "Vehicle number is required" });
+        }
+
+        // Check if user already has a vehicle
+        const existingVehicle = await Vehicle.findOne({ owner: req.user.id });
+        if (existingVehicle) {
+            return res.status(400).json({ message: "You already have a registered vehicle" });
+        }
+
+        // Generate unique credentials
+        const deviceId = `SD-${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
+        const deviceSecretKey = crypto.randomBytes(16).toString('hex');
+
+        const vehicle = await Vehicle.create({
+            deviceId,
+            deviceSecretKey,
+            vehicleNumber,
+            owner: req.user.id
+        });
+
+        res.status(201).json({
+            message: "Vehicle registered successfully",
+            vehicle: {
+                deviceId: vehicle.deviceId,
+                deviceSecretKey: vehicle.deviceSecretKey,
+                vehicleNumber: vehicle.vehicleNumber
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
 
 exports.updateVehicleData = async (req, res) => {
     try {
