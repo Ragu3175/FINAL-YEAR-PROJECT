@@ -113,47 +113,6 @@ const UserPanel = () => {
         setTimeout(() => setCopied(false), 2000);
     };
 
-    if (!hasVehicle && !registeredVehicle) {
-        return (
-            <div className="no-vehicle-container">
-                <div className="setup-card">
-                    <h2>Welcome to SafeDrive AI</h2>
-                    <p>To get started, please register your vehicle to generate your hardware credentials.</p>
-                    <button className="btn btn-primary lg" onClick={() => setShowRegisterModal(true)}>
-                        <Plus size={20} />
-                        Register New Vehicle
-                    </button>
-                </div>
-
-                {showRegisterModal && (
-                    <div className="modal-overlay">
-                        <div className="modal-content">
-                            <h3>Register Vehicle</h3>
-                            <form onSubmit={handleRegister}>
-                                <div className="input-group">
-                                    <label>Vehicle Number Plate</label>
-                                    <input
-                                        type="text"
-                                        value={vehicleNumber}
-                                        onChange={(e) => setVehicleNumber(e.target.value)}
-                                        placeholder="e.g. TN-01-AB-1234"
-                                        required
-                                    />
-                                </div>
-                                <div className="modal-actions">
-                                    <button type="button" className="btn btn-outline" onClick={() => setShowRegisterModal(false)}>Cancel</button>
-                                    <button type="submit" className="btn btn-primary" disabled={registrationLoading}>
-                                        {registrationLoading ? 'Registering...' : 'Register'}
-                                    </button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
-                )}
-            </div>
-        );
-    }
-
     if (registeredVehicle) {
         return (
             <div className="success-container">
@@ -296,6 +255,10 @@ const UserPanel = () => {
                 <div className="actions-card card">
                     <h3>Quick Actions</h3>
                     <div className="action-buttons">
+                        <button className="btn btn-primary" onClick={() => setShowRegisterModal(true)}>
+                            <Plus size={16} />
+                            Register New Vehicle
+                        </button>
                         <button className="btn btn-outline">
                             <Trash2 size={16} />
                             Clear table
@@ -309,6 +272,33 @@ const UserPanel = () => {
             </div>
 
             <ChatAssistant role="user" />
+
+            {/* Registration Modal overlay moved here so it works over the dashboard */}
+            {showRegisterModal && (
+                <div className="modal-overlay">
+                    <div className="modal-content">
+                        <h3>Register Vehicle</h3>
+                        <form onSubmit={handleRegister}>
+                            <div className="input-group">
+                                <label>Vehicle Number Plate</label>
+                                <input
+                                    type="text"
+                                    value={vehicleNumber}
+                                    onChange={(e) => setVehicleNumber(e.target.value)}
+                                    placeholder="e.g. TN-01-AB-1234"
+                                    required
+                                />
+                            </div>
+                            <div className="modal-actions">
+                                <button type="button" className="btn btn-outline" onClick={() => setShowRegisterModal(false)}>Cancel</button>
+                                <button type="submit" className="btn btn-primary" disabled={registrationLoading}>
+                                    {registrationLoading ? 'Registering...' : 'Register'}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };
