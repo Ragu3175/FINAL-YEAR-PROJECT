@@ -5,6 +5,7 @@ import UserPanel from './pages/UserPanel';
 import AdminPanel from './pages/AdminPanel';
 import LoginPage from './pages/Auth/LoginPage';
 import ProtectedRoute from './components/auth/ProtectedRoute';
+import AboutPage from './pages/AboutPage';
 import { AuthProvider } from './context/AuthContext';
 import './App.css';
 
@@ -17,6 +18,7 @@ function App() {
           <main className="main-content">
             <Routes>
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/about" element={<AboutPage />} />
 
               {/* Protected Routes */}
               <Route element={<ProtectedRoute />}>

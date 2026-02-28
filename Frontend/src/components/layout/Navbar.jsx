@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Shield, LayoutDashboard, LogOut, User } from 'lucide-react';
+import { Shield, LayoutDashboard, LogOut, User, Info } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import './Navbar.css';
 
@@ -26,6 +26,14 @@ const Navbar = () => {
                 </Link>
 
                 <div className="navbar-links">
+                    <Link
+                        to="/about"
+                        className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
+                    >
+                        <Info size={18} />
+                        About
+                    </Link>
+
                     {isAuthenticated && (
                         <>
                             <Link
