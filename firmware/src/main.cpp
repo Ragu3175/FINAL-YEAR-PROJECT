@@ -8,13 +8,13 @@
 #include "HX711.h"
 
 // ===== Wi-Fi Credentials =====
-const char* ssid = "RAGU";
-const char* password = "234567890";
+const char* ssid = "A4012";
+const char* password = "ayya";
 
 // ===== Server URL (UPDATED) =====
 // For local testing, use the IP of your computer. For deployment, use your domain/IP.
-const char* serverUrl = "http://10.247.104.198:5000/api/vehicle/update"; 
-const char* deviceKey = "YOUR_DEVICE_SECRET_KEY"; // Get this from your Vehicle record in MongoDB
+const char* serverUrl = "https://final-year-project-4yre.onrender.com/api/vehicle/update"; 
+const char* deviceKey = "PASTE_YOUR_COPIED_SECRET_KEY_HERE"; // Get this from your Vehicle record in MongoDB
 
 // ===== Pin Definitions =====
 #define GPS_RX 16
