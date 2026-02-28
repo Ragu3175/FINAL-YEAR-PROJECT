@@ -32,11 +32,28 @@ const AdminPanel = () => {
 
         subscribeToTelemetry((err, data) => {
             if (err) return;
-            setVehicles(prev => prev.map(v =>
-                v.id === data.deviceId
-                    ? { ...v, speed: `${data.telemetry.speed.toFixed(1)} km/h`, status: data.telemetry.riskLevel, location: [data.telemetry.lat, data.telemetry.long] }
-                    : v
-            ));
+            setVehicles(prev => {
+                const existingIndex = prev.findIndex(v => v.id === data.deviceId);
+                const updatedVehicle = {
+                    id: data.deviceId,
+                    owner: data.ownerName || 'Live User',
+                    speed: `${(data.telemetry?.speed || 0).toFixed(1)} km/h`,
+                    status: data.telemetry?.riskLevel || 'Low',
+                    location: [data.telemetry?.lat || 0, data.telemetry?.long || 0],
+                    alcohol: data.telemetry?.violations?.includes('ALCOHOL') ? 'Positive' : 'Negative',
+                    seatbelt: data.telemetry?.violations?.includes('SEATBELT') ? 'Not Worn' : 'Worn',
+                };
+
+                if (existingIndex >= 0) {
+                    // Update existing vehicle
+                    const newVehicles = [...prev];
+                    newVehicles[existingIndex] = { ...newVehicles[existingIndex], ...updatedVehicle };
+                    return newVehicles;
+                } else {
+                    // Add new vehicle dynamically
+                    return [...prev, updatedVehicle];
+                }
+            });
         });
 
         subscribeToViolations((err, data) => {
