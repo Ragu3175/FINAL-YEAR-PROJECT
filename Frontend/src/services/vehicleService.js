@@ -1,6 +1,6 @@
 import authService from './authService';
 
-const API_URL = 'http://localhost:5000/api/vehicle'; // Adjust to your deployed backend URL
+const API_URL = `${import.meta.env.VITE_API_URL}/api/vehicle`;
 
 const vehicleService = {
     registerVehicle: async (vehicleNumber) => {
