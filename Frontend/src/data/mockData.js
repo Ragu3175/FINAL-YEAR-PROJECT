@@ -4,25 +4,25 @@ export const vehicleData = {
         long: "77.5946",
         speed: "65 km/h",
         temp: "34°C",
-        lastUpdate: "2 mins ago",
-        status: "Medium", // Low, Medium, High
-        accidentRisk: "25%",
+        lastUpdate: "Just now",
+        status: "ABOVE_MEDIUM",
+        accidentRisk: "65%",
     },
     sensors: {
-        ir: "Normal",
+        ir: "Drowsy",
         mq: "0.02 ppm",
-        flex: "15°",
+        flex: "850°",
         loadCell: "70 kg"
     },
     timeSeries: [
-        { time: "1:43:54 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: 0.1, y: 0.2, z: 9.8 },
-        { time: "1:43:54 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: 0.2, y: 0.1, z: 9.7 },
-        { time: "1:43:35 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: 0.5, y: -0.2, z: 9.9 },
-        { time: "1:43:33 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: -0.1, y: 0.3, z: 9.6 },
-        { time: "1:43:31 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: 0.3, y: 0.1, z: 9.8 },
-        { time: "1:43:29 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: 0.8, y: -0.5, z: 9.5 },
-        { time: "1:43:27 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: -0.2, y: 0.2, z: 9.9 },
-        { time: "1:43:25 PM", speed: "0.00", overspeeding: "No", seatbelt: "Not Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "High", x: 0.1, y: 0.1, z: 9.7 },
+        { time: "1:43:54 PM", speed: "65.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Closed", smoking: "No", alcohol: "Normal", risk: "ABOVE_MEDIUM", x: 0.1, y: 0.2, z: 9.8 },
+        { time: "1:43:52 PM", speed: "68.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "LOW", x: 0.2, y: 0.1, z: 9.7 },
+        { time: "1:43:50 PM", speed: "65.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Closed", smoking: "No", alcohol: "Normal", risk: "ABOVE_MEDIUM", x: 0.5, y: -0.2, z: 9.9 },
+        { time: "1:43:48 PM", speed: "70.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "LOW", x: -0.1, y: 0.3, z: 9.6 },
+        { time: "1:43:46 PM", speed: "72.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "LOW", x: 0.3, y: 0.1, z: 9.8 },
+        { time: "1:43:44 PM", speed: "70.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "LOW", x: 0.8, y: -0.5, z: 9.5 },
+        { time: "1:43:42 PM", speed: "68.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "LOW", x: -0.2, y: 0.2, z: 9.9 },
+        { time: "1:43:40 PM", speed: "65.00", overspeeding: "No", seatbelt: "Worn", eyeStatus: "Open", smoking: "No", alcohol: "Normal", risk: "LOW", x: 0.1, y: 0.1, z: 9.7 },
     ],
 };
 

@@ -33,6 +33,100 @@ const UserPanel = () => {
     const [registrationLoading, setRegistrationLoading] = useState(false);
     const [registeredVehicle, setRegisteredVehicle] = useState(null);
     const [copied, setCopied] = useState(false);
+    const [isSimulating, setIsSimulating] = useState(false);
+
+    // Simulation Loop
+    useEffect(() => {
+        let interval;
+        if (isSimulating) {
+            interval = setInterval(() => {
+                const randomSpeed = Math.floor(Math.random() * 100);
+                const randomMq = Math.floor(Math.random() * 4000);
+                const randomFlex = Math.floor(Math.random() * 1000);
+                const randomIr = Math.random() > 0.8 ? 0 : 1;
+
+                const violations = [];
+                if (randomSpeed > 80) violations.push('OVERSPEED');
+                if (randomMq > 1800 && randomMq <= 3000) violations.push('ALCOHOL');
+                if (randomMq > 3000) violations.push('SMOKING');
+                if (randomFlex < 700) violations.push('SEATBELT');
+                if (randomIr === 0) violations.push('DROWSY');
+
+                let riskLevel = 'LOW';
+                const totalCount = violations.length;
+                const hasSeatbelt = violations.includes('SEATBELT');
+                const majors = hasSeatbelt ? totalCount - 1 : totalCount;
+
+                if (totalCount === 0) riskLevel = 'LOW';
+                else if (totalCount === 1 && hasSeatbelt) riskLevel = 'MEDIUM';
+                else if (majors === 1) riskLevel = 'ABOVE_MEDIUM';
+                else if (majors >= 2 || totalCount >= 3) riskLevel = 'HIGH';
+
+                const mockDataUpdate = {
+                    telemetry: {
+                        lat: (12.9716 + (Math.random() - 0.5) * 0.01).toFixed(4),
+                        long: (77.5946 + (Math.random() - 0.5) * 0.01).toFixed(4),
+                        speed: randomSpeed,
+                        riskLevel: riskLevel,
+                        violations: violations,
+                        temp: Math.floor(25 + Math.random() * 15)
+                    },
+                    sensors: {
+                        mq: randomMq,
+                        flex: randomFlex,
+                        ir: randomIr,
+                        weight: 70
+                    }
+                };
+
+                // Trigger update similar to socket
+                updateDashboard(mockDataUpdate);
+            }, 3000);
+        }
+        return () => clearInterval(interval);
+    }, [isSimulating]);
+
+    const updateDashboard = (data) => {
+        setLiveVehicleData(prev => {
+            const newTimeSeries = [{
+                time: new Date().toLocaleTimeString(),
+                speed: data.telemetry.speed.toFixed(2),
+                overspeeding: data.telemetry.violations.includes('OVERSPEED') ? "Yes" : "No",
+                seatbelt: data.telemetry.violations.includes('SEATBELT') ? "Not Worn" : "Worn",
+                eyeStatus: data.telemetry.violations.includes('DROWSY') ? "Closed" : "Open",
+                smoking: data.telemetry.violations.includes('SMOKING') ? "Yes" : "No",
+                alcohol: data.telemetry.violations.includes('ALCOHOL') ? "Detected" : "Normal",
+                risk: data.telemetry.riskLevel,
+                x: (Math.random() - 0.5).toFixed(2),
+                y: (Math.random() - 0.5).toFixed(2),
+                z: (9.8 + (Math.random() - 0.5)).toFixed(2)
+            }, ...prev.timeSeries];
+
+            return {
+                ...prev,
+                telemetry: {
+                    ...prev.telemetry,
+                    lat: data.telemetry.lat,
+                    long: data.telemetry.long,
+                    speed: `${data.telemetry.speed.toFixed(2)} km/h`,
+                    temp: `${data.telemetry.temp}°C`,
+                    status: data.telemetry.riskLevel,
+                    accidentRisk:
+                        data.telemetry.riskLevel === 'HIGH' ? '95%' :
+                            data.telemetry.riskLevel === 'ABOVE_MEDIUM' ? '65%' :
+                                data.telemetry.riskLevel === 'MEDIUM' ? '30%' : '5%',
+                    lastUpdate: "Just now"
+                },
+                sensors: {
+                    ir: data.sensors.ir === 0 ? "Drowsy" : "Normal",
+                    mq: `${data.sensors.mq} ppm`,
+                    flex: `${data.sensors.flex}`,
+                    loadCell: `${data.sensors.weight || 0} kg`
+                },
+                timeSeries: newTimeSeries.slice(0, 50)
+            };
+        });
+    };
 
     useEffect(() => {
         const checkVehicleStatus = async () => {
@@ -54,45 +148,7 @@ const UserPanel = () => {
 
         subscribeToTelemetry((err, data) => {
             if (err) return;
-
-            setLiveVehicleData(prev => {
-                const newTimeSeries = [{
-                    time: new Date().toLocaleTimeString(),
-                    speed: data.telemetry.speed.toFixed(2),
-                    overspeeding: data.telemetry.violations.includes('OVERSPEED') ? "Yes" : "No",
-                    seatbelt: data.telemetry.violations.includes('SEATBELT') ? "Not Worn" : "Worn",
-                    eyeStatus: data.telemetry.violations.includes('DROWSY') ? "Closed" : "Open",
-                    smoking: data.telemetry.violations.includes('SMOKING') ? "Yes" : "No",
-                    alcohol: data.telemetry.violations.includes('ALCOHOL') ? "Detected" : "Normal",
-                    risk: data.telemetry.riskLevel,
-                    // Use actual XYZ if needed or keep existing mapping
-                    x: data.sensors.accelX || 0,
-                    y: data.sensors.accelY || 0,
-                    z: data.sensors.accelZ || 0
-                }, ...prev.timeSeries];
-
-                return {
-                    ...prev,
-                    telemetry: {
-                        ...prev.telemetry,
-                        lat: data.telemetry.lat.toFixed(4),
-                        long: data.telemetry.long.toFixed(4),
-                        speed: `${data.telemetry.speed.toFixed(2)} km/h`,
-                        status: data.telemetry.riskLevel,
-                        accidentRisk:
-                            data.telemetry.riskLevel === 'HIGH' ? '95%' :
-                                data.telemetry.riskLevel === 'ABOVE_MEDIUM' ? '65%' :
-                                    data.telemetry.riskLevel === 'MEDIUM' ? '30%' : '5%'
-                    },
-                    sensors: {
-                        ir: data.sensors.ir === 0 ? "Drowsy" : "Normal",
-                        mq: `${data.sensors.mq} ppm`,
-                        flex: `${data.sensors.flex}`,
-                        loadCell: `${data.sensors.weight || 0} kg`
-                    },
-                    timeSeries: newTimeSeries.slice(0, 50) // Keep history
-                };
-            });
+            updateDashboard(data);
         });
 
         return () => disconnectSocket();
@@ -268,9 +324,12 @@ const UserPanel = () => {
                             <Trash2 size={16} />
                             Clear table
                         </button>
-                        <button className="btn btn-primary">
-                            <Download size={16} />
-                            Download CSV
+                        <button
+                            className={`btn ${isSimulating ? 'btn-danger' : 'btn-primary'}`}
+                            onClick={() => setIsSimulating(!isSimulating)}
+                        >
+                            <Zap size={16} />
+                            {isSimulating ? 'Stop Simulator' : 'Start Simulator'}
                         </button>
                     </div>
                 </div>
