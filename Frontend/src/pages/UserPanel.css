@@ -84,7 +84,24 @@
 }
 
 .risk-icon {
+    color: inherit;
+}
+
+.risk-cell.low {
+    color: var(--success);
+}
+
+.risk-cell.medium {
     color: var(--warning);
+}
+
+.risk-cell.above_medium {
+    color: #f97316;
+}
+
+/* Orange */
+.risk-cell.high {
+    color: var(--danger);
 }
 
 /* Table Styles */
@@ -183,7 +200,22 @@ tr:last-child td {
 .risk-value {
     font-size: 2.5rem;
     font-weight: 800;
-    color: var(--primary);
+}
+
+.risk-value.low {
+    color: var(--success);
+}
+
+.risk-value.medium {
+    color: var(--warning);
+}
+
+.risk-value.above_medium {
+    color: #f97316;
+}
+
+.risk-value.high {
+    color: var(--danger);
 }
 
 .note {

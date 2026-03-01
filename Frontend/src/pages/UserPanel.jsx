@@ -79,7 +79,10 @@ const UserPanel = () => {
                         long: data.telemetry.long.toFixed(4),
                         speed: `${data.telemetry.speed.toFixed(2)} km/h`,
                         status: data.telemetry.riskLevel,
-                        accidentRisk: data.telemetry.riskLevel === 'HIGH' ? '90%' : '15%'
+                        accidentRisk:
+                            data.telemetry.riskLevel === 'HIGH' ? '95%' :
+                                data.telemetry.riskLevel === 'ABOVE_MEDIUM' ? '65%' :
+                                    data.telemetry.riskLevel === 'MEDIUM' ? '30%' : '5%'
                     },
                     sensors: {
                         ir: data.sensors.ir === 0 ? "Drowsy" : "Normal",
@@ -187,7 +190,7 @@ const UserPanel = () => {
                                         <td>{row.eyeStatus}</td>
                                         <td>{row.smoking}</td>
                                         <td>{row.alcohol}</td>
-                                        <td className="risk-cell">
+                                        <td className={`risk-cell ${row.risk.toLowerCase()}`}>
                                             <AlertTriangle size={14} className="risk-icon" />
                                             {row.risk}
                                         </td>
@@ -245,7 +248,7 @@ const UserPanel = () => {
                     </div>
                     <div className="risk-level card">
                         <span>Accident Risk</span>
-                        <div className="risk-value">{telemetry.accidentRisk}</div>
+                        <div className={`risk-value ${telemetry.status.toLowerCase()}`}>{telemetry.accidentRisk}</div>
                         <span className={`badge badge-${telemetry.status.toLowerCase()}`}>
                             {telemetry.status} Risk
                         </span>

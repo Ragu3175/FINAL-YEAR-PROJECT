@@ -4,28 +4,46 @@
  */
 function calculateRisk(sensorData) {
     const violations = [];
-    let riskScore = 0;
 
+    // 1. Detect Violations
     if (sensorData.speed > 80) {
         violations.push('OVERSPEED');
-        riskScore += 30;
     }
-    if (sensorData.mqValue > 1800) {
+    // Alcohol detection
+    if (sensorData.mqValue > 1800 && sensorData.mqValue <= 3000) {
         violations.push('ALCOHOL');
-        riskScore += 40;
     }
+    // Smoking detection (simulated via higher MQ value or could be a separate field)
+    if (sensorData.mqValue > 3000) {
+        violations.push('SMOKING');
+    }
+    // Seatbelt detection
     if (sensorData.flexValue < 700) {
         violations.push('SEATBELT');
-        riskScore += 20;
     }
+    // Drowsiness detection
     if (sensorData.irStatus === 0) {
         violations.push('DROWSY');
-        riskScore += 10;
     }
 
+    // 2. Calculate Risk Level
     let riskLevel = 'LOW';
-    if (riskScore >= 60) riskLevel = 'HIGH';
-    else if (riskScore >= 30) riskLevel = 'MEDIUM';
+    const totalCount = violations.length;
+    const hasSeatbeltViolation = violations.includes('SEATBELT');
+    const majorViolationsCount = hasSeatbeltViolation ? totalCount - 1 : totalCount;
+
+    if (totalCount === 0) {
+        riskLevel = 'LOW';
+    } else if (totalCount === 1 && hasSeatbeltViolation) {
+        // Only seatbelt is not worn -> MEDIUM
+        riskLevel = 'MEDIUM';
+    } else if (majorViolationsCount === 1) {
+        // Exactly one major violation (regardless of seatbelt) -> ABOVE_MEDIUM
+        riskLevel = 'ABOVE_MEDIUM';
+    } else if (majorViolationsCount >= 2 || totalCount >= 3) {
+        // Multiple major violations or many minor ones -> HIGH
+        riskLevel = 'HIGH';
+    }
 
     return { riskLevel, violations };
 }
