@@ -19,6 +19,7 @@ import {
     Server,
     Code2,
     Layers,
+    User,
 } from 'lucide-react';
 import './AboutPage.css';
 
@@ -33,9 +34,10 @@ const AboutPage = () => {
     ];
 
     const teamMembers = [
-        { name: 'vigneshwaran .R' },
-        { name: 'swathi .P' },
-        { name: 'raguram .R' },
+        { name: 'Dr.Gowthan .P', role: 'Project Guide' },
+        { name: 'Vigneshwaran .R' },
+        { name: 'Swathi .P' },
+        { name: 'Raguram .R' },
     ];
 
     const sensors = [
@@ -284,10 +286,11 @@ const AboutPage = () => {
                         {teamMembers.map((member, i) => (
                             <div key={i} className="about-member-card">
                                 <div className="about-member-avatar">
-                                    {member.name.charAt(0).toUpperCase()}
+                                    <User size={32} />
                                 </div>
                                 <div className="about-member-info">
                                     <h3>{member.name}</h3>
+                                    {member.role && <p>{member.role}</p>}
                                 </div>
                             </div>
                         ))}
