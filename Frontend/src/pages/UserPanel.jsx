@@ -5,6 +5,7 @@ import TelemetryCharts from '../components/charts/TelemetryCharts';
 import ChatAssistant from '../components/chat/ChatAssistant';
 import { initiateSocketConnection, subscribeToTelemetry, disconnectSocket } from '../services/socketService';
 import vehicleService from '../services/vehicleService';
+import { useAuth } from '../context/AuthContext';
 import './UserPanel.css';
 
 // Sub-components can be moved to separate files later if they grow
@@ -21,6 +22,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
 );
 
 const UserPanel = () => {
+    const { user } = useAuth();
     const [liveVehicleData, setLiveVehicleData] = useState(initialMockData);
     const { telemetry, sensors, timeSeries } = liveVehicleData;
 
@@ -34,13 +36,13 @@ const UserPanel = () => {
 
     useEffect(() => {
         const checkVehicleStatus = async () => {
+            if (!user || user.role !== 'USER') return;
             try {
                 const vehicle = await vehicleService.getVehicleStatus();
                 if (!vehicle) {
                     setHasVehicle(false);
                 } else {
                     setHasVehicle(true);
-                    // Could also set initial data here based on DB
                 }
             } catch (error) {
                 console.error("Error checking vehicle status:", error);
@@ -91,7 +93,7 @@ const UserPanel = () => {
         });
 
         return () => disconnectSocket();
-    }, []);
+    }, [user]);
 
     const handleRegister = async (e) => {
         e.preventDefault();

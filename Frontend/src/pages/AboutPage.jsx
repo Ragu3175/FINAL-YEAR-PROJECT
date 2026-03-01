@@ -32,6 +32,12 @@ const AboutPage = () => {
         { icon: <Map size={24} />, label: 'Leaflet', desc: 'Interactive fleet map' },
     ];
 
+    const teamMembers = [
+        { name: 'vigneshwaran .R' },
+        { name: 'swathi .P' },
+        { name: 'raguram .R' },
+    ];
+
     const sensors = [
         { icon: <Activity size={20} />, name: 'MPU6050', desc: 'Accelerometer & Gyroscope – detects sudden braking, sharp turns, crash impacts' },
         { icon: <Globe size={20} />, name: 'NEO-6M GPS', desc: 'Accurate live latitude/longitude tracking and speed measurement' },
@@ -262,6 +268,26 @@ const AboutPage = () => {
                                 <div className="about-challenge-solution">
                                     <CheckCircle size={16} className="about-solution-icon" />
                                     <p>{c.solution}</p>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </section>
+
+                {/* Team Members */}
+                <section className="about-section">
+                    <div className="about-section-header">
+                        <Globe size={24} className="about-section-icon" />
+                        <h2>Our Team</h2>
+                    </div>
+                    <div className="about-team-grid">
+                        {teamMembers.map((member, i) => (
+                            <div key={i} className="about-member-card">
+                                <div className="about-member-avatar">
+                                    {member.name.charAt(0).toUpperCase()}
+                                </div>
+                                <div className="about-member-info">
+                                    <h3>{member.name}</h3>
                                 </div>
                             </div>
                         ))}

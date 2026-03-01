@@ -1,12 +1,29 @@
-const { GoogleGenerativeAI } = require('@google-generative-ai/generative-ai');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
 const fs = require('fs');
 const path = require('path');
 
 // Initialize Gemini API
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+const apiKey = process.env.GEMINI_API_KEY;
+console.log('Gemini API Key Status:', apiKey ? `Present (${apiKey.substring(0, 8)}...)` : 'MISSING');
+const genAI = new GoogleGenerativeAI(apiKey);
+
+// Startup Diagnostic Test
+(async () => {
+    if (!apiKey) return;
+    try {
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        await model.generateContent("test");
+        console.log('✅ AI Service: Gemini Connection Verified');
+    } catch (error) {
+        console.error('❌ AI Service: Startup test failed:', error.message);
+        if (error.message.includes('404')) {
+            console.error('   TIP: This 404 usually means the API is not enabled for this key or the model name is restricted.');
+        }
+    }
+})();
 
 /**
- * Service to handle AI interactions using Gemini
+ * Generate a response using Gemini AI
  */
 const generateResponse = async (userPrompt, projectContext = '') => {
     try {
@@ -20,8 +37,10 @@ const generateResponse = async (userPrompt, projectContext = '') => {
         }
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-1.5-flash",
-            systemInstruction: `You are SafeDrive AI Assistant, a helpful AI integrated into the SafeDrive AI project.
+            model: "gemini-1.5-flash"
+        });
+
+        const fullPrompt = `System: You are SafeDrive AI Assistant, a helpful AI integrated into the SafeDrive AI project.
       Your goal is to help users understand the project, its features, and how it works.
       
       CRITICAL CONTEXT ABOUT THE PROJECT:
@@ -30,17 +49,19 @@ const generateResponse = async (userPrompt, projectContext = '') => {
       GUIDELINES:
       1. Be concise, professional, and friendly.
       2. If a user asks about features, sensors, or tech stack, refer to the provided context.
-      3. If you don't know the answer based on the context, politely say so and offer to help with general project-related questions.
-      4. Do not make up information that isn't in the context for specific project details.
-      5. Use markdown for better readability (bolding, lists, etc.).`
-        });
+      3. If you don't know the answer based on the context, politely say so.
+      4. Use markdown for better readability.
+      
+      User Question: ${userPrompt}`;
 
-        const result = await model.generateContent(userPrompt);
+        console.log('Generating AI Response with prompt length:', fullPrompt.length);
+        const result = await model.generateContent(fullPrompt);
         const response = await result.response;
-        return response.text();
+        const text = response.text();
+        return text;
     } catch (error) {
-        console.error('Error in AI Service:', error);
-        throw new Error('Failed to generate AI response. Make sure your GEMINI_API_KEY is valid.');
+        console.error('CRITICAL: AI Service Error:', error);
+        throw new Error(`AI Assistant Error: ${error.message}`);
     }
 };
 

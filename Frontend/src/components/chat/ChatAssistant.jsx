@@ -41,7 +41,7 @@ const ChatAssistant = ({ role = 'user' }) => {
         } catch (error) {
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
-                text: "Sorry, I'm having trouble connecting to the AI. Please make sure the API key is set correctly in the backend.",
+                text: error.message || "Sorry, I'm having trouble connecting to the AI assistant.",
                 sender: 'assistant',
                 isError: true
             }]);

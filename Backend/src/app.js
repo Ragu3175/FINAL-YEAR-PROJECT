@@ -17,7 +17,8 @@ app.use(helmet({
 
 const allowedOrigins = [
     "https://final-year-project-three-red.vercel.app",
-    "http://localhost:5173"
+    "http://localhost:5173",
+    "http://localhost:5174"
 ];
 
 app.use(cors({
