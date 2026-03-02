@@ -54,9 +54,9 @@
 }
 
 .about-hero-title {
-    font-size: clamp(3rem, 8vw, 5.5rem);
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
     font-weight: 800;
-    line-height: 1.05;
+    line-height: 1.1;
     letter-spacing: -0.03em;
     color: #f8fafc;
     margin-bottom: 0.5rem;
@@ -105,7 +105,8 @@
     border-radius: 1rem;
     padding: 1rem 1.75rem;
     backdrop-filter: blur(10px);
-    min-width: 90px;
+    min-width: 120px;
+    flex: 1 1 120px;
 }
 
 .about-stat-value {
@@ -571,15 +572,48 @@
         padding: 4rem 1.25rem 3rem;
     }
 
+    .about-hero-subtitle {
+        font-size: 1.1rem;
+    }
+
     .about-stats-row {
-        gap: 1rem;
+        gap: 0.75rem;
     }
 
-    .about-arch-grid {
-        grid-template-columns: 1fr;
+    .about-stat {
+        padding: 0.75rem;
     }
 
+    .about-stat-value {
+        font-size: 1.5rem;
+    }
+
+    .about-arch-grid,
+    .about-features-grid,
+    .about-tech-grid,
+    .about-team-grid,
     .about-challenges-grid {
         grid-template-columns: 1fr;
+    }
+
+    .about-member-card {
+        flex-direction: column;
+        text-align: center;
+        padding: 2rem 1.5rem;
+    }
+
+    .about-section-header h2 {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .about-hero-title {
+        font-size: 2.25rem;
+    }
+
+    .about-container {
+        padding: 0 1rem 3rem;
+        gap: 3rem;
     }
 }

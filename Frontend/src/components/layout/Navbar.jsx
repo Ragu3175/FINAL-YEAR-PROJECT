@@ -34,25 +34,26 @@ const Navbar = () => {
                         About
                     </Link>
 
-                    {isAuthenticated && (
-                        <>
-                            <Link
-                                to="/"
-                                className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-                            >
-                                <LayoutDashboard size={18} />
-                                User Panel
-                            </Link>
-                            {user?.role === 'ADMIN' && (
-                                <Link
-                                    to="/admin"
-                                    className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
-                                >
-                                    <Shield size={18} />
-                                    Admin Panel
-                                </Link>
-                            )}
+                    <Link
+                        to="/"
+                        className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
+                    >
+                        <LayoutDashboard size={18} />
+                        User Panel
+                    </Link>
 
+                    {user?.role === 'ADMIN' && (
+                        <Link
+                            to="/admin"
+                            className={`nav-link ${location.pathname === '/admin' ? 'active' : ''}`}
+                        >
+                            <Shield size={18} />
+                            Admin Panel
+                        </Link>
+                    )}
+
+                    {isAuthenticated ? (
+                        <>
                             <div className="nav-user-info">
                                 <User size={18} />
                                 <span>{user?.name || 'User'}</span>
@@ -63,6 +64,11 @@ const Navbar = () => {
                                 Logout
                             </button>
                         </>
+                    ) : (
+                        <Link to="/login" className="nav-link login-link">
+                            <User size={18} />
+                            Login
+                        </Link>
                     )}
                 </div>
             </div>
