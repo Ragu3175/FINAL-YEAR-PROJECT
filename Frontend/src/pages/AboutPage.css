@@ -572,6 +572,10 @@
         padding: 4rem 1.25rem 3rem;
     }
 
+    .about-hero-title {
+        font-size: clamp(2rem, 10vw, 3.5rem);
+    }
+
     .about-hero-subtitle {
         font-size: 1.1rem;
     }
@@ -582,10 +586,16 @@
 
     .about-stat {
         padding: 0.75rem;
+        min-width: 100px;
     }
 
     .about-stat-value {
         font-size: 1.5rem;
+    }
+
+    .about-container {
+        gap: 3rem;
+        padding-bottom: 3rem;
     }
 
     .about-arch-grid,
@@ -612,8 +622,17 @@
         font-size: 2.25rem;
     }
 
+    .about-hero-badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.75rem;
+    }
+
+    .about-stat {
+        flex: 1 1 calc(50% - 0.5rem);
+    }
+
     .about-container {
         padding: 0 1rem 3rem;
-        gap: 3rem;
+        gap: 2.5rem;
     }
-}
+}
