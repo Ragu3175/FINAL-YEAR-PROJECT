@@ -114,7 +114,7 @@ const UserPanel = () => {
                     lat: data.telemetry.lat,
                     long: data.telemetry.long,
                     speed: `${data.telemetry.speed.toFixed(2)} km/h`,
-                    temp: `${data.telemetry.temp}°C`,
+                    temp: data.telemetry.temp !== undefined ? `${data.telemetry.temp}°C` : 'N/A',
                     status: data.telemetry.riskLevel,
                     accidentRisk:
                         data.telemetry.riskLevel === 'HIGH' ? '95%' :
@@ -126,7 +126,7 @@ const UserPanel = () => {
                     ir: data.sensors.ir === 0 ? "Drowsy" : "Normal",
                     mq: `${data.sensors.mq} ppm`,
                     flex: `${data.sensors.flex}`,
-                    loadCell: `${data.sensors.weight || 0} kg`
+                    loadCell: `${data.telemetry.weight !== undefined ? data.telemetry.weight : (data.sensors.weight || 0)} kg`
                 },
                 timeSeries: newTimeSeries.slice(0, 50)
             };
