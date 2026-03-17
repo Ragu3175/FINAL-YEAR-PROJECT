@@ -64,10 +64,16 @@ void setup() {
 
 void loop() {
   sensors_event_t a, g, temp;
-  mpu.getEvent(&a, &g, &temp);
+  bool mpuActive = mpu.getEvent(&a, &g, &temp);
 
+  // Process GPS serial data
   while (gpsSerial.available() > 0)
     gps.encode(gpsSerial.read());
+
+  // Diagnostics: Print GPS status if no lock
+  if (!gps.location.isValid()) {
+    Serial.println("🛰️ Waiting for GPS lock... (Check if you are outdoors)");
+  }
 
   double lat = gps.location.isValid() ? gps.location.lat() : 0.0;
   double lon = gps.location.isValid() ? gps.location.lng() : 0.0;
@@ -82,19 +88,30 @@ void loop() {
     HTTPClient http;
     http.begin(serverUrl);
     http.addHeader("Content-Type", "application/json");
-    // This header is REQUIRED for the backend to recognize your device
     http.addHeader("x-device-key", deviceKey);
 
     String payload = "{";
     payload += "\"latitude\":" + String(lat, 6) + ",";
     payload += "\"longitude\":" + String(lon, 6) + ",";
     payload += "\"speed\":" + String(speed, 2) + ",";
-    payload += "\"accelX\":" + String(a.acceleration.x, 2) + ",";
-    payload += "\"accelY\":" + String(a.acceleration.y, 2) + ",";
-    payload += "\"accelZ\":" + String(a.acceleration.z, 2) + ",";
-    payload += "\"gyroX\":" + String(g.gyro.x, 2) + ",";
-    payload += "\"gyroY\":" + String(g.gyro.y, 2) + ",";
-    payload += "\"gyroZ\":" + String(g.gyro.z, 2) + ",";
+    
+    // Add IMU data if MPU6050 is active, otherwise send 0.0s
+    if (mpuActive) {
+      payload += "\"accelX\":" + String(a.acceleration.x, 2) + ",";
+      payload += "\"accelY\":" + String(a.acceleration.y, 2) + ",";
+      payload += "\"accelZ\":" + String(a.acceleration.z, 2) + ",";
+      payload += "\"gyroX\":" + String(g.gyro.x, 2) + ",";
+      payload += "\"gyroY\":" + String(g.gyro.y, 2) + ",";
+      payload += "\"gyroZ\":" + String(g.gyro.z, 2) + ",";
+    } else {
+      payload += "\"accelX\":0.0,";
+      payload += "\"accelY\":0.0,";
+      payload += "\"accelZ\":0.0,";
+      payload += "\"gyroX\":0.0,";
+      payload += "\"gyroY\":0.0,";
+      payload += "\"gyroZ\":0.0,";
+    }
+
     payload += "\"irStatus\":" + String(irValue) + ",";
     payload += "\"mqValue\":" + String(mqAnalog) + ",";
     payload += "\"flexValue\":" + String(flexValue) + ",";
@@ -102,10 +119,19 @@ void loop() {
     payload += "}";
 
     int code = http.POST(payload);
-    Serial.printf("Sent (%d): %s\n", code, payload.c_str());
+    
+    if (code > 0) {
+      Serial.printf("✅ Sent (%d): %s\n", code, payload.c_str());
+    } else {
+      Serial.printf("❌ POST failed: %s\n", http.errorToString(code).c_str());
+    }
 
     http.end();
+  } else {
+    Serial.println("🛜 WiFi disconnected! Attempting reconnect...");
+    WiFi.begin(ssid, password);
   }
 
   delay(1500);
 }
+

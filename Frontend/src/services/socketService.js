@@ -29,3 +29,12 @@ export const subscribeToViolations = (cb) => {
         return cb(null, data);
     });
 };
+
+export const subscribeToEmergency = (cb) => {
+    if (!socket) return (true);
+    socket.on('emergencyAlert', data => {
+        console.log('🚨 EMERGENCY ALERT RECEIVED!');
+        return cb(null, data);
+    });
+};
+

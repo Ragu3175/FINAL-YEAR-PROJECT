@@ -3,7 +3,7 @@ import { vehicleData as initialMockData } from '../data/mockData';
 import { MapPin, Zap, Thermometer, Clock, Download, Trash2, ArrowRight, AlertTriangle, Plus, Key, Copy, Check } from 'lucide-react';
 import TelemetryCharts from '../components/charts/TelemetryCharts';
 import ChatAssistant from '../components/chat/ChatAssistant';
-import { initiateSocketConnection, subscribeToTelemetry, disconnectSocket } from '../services/socketService';
+import { initiateSocketConnection, subscribeToTelemetry, subscribeToEmergency, disconnectSocket } from '../services/socketService';
 import vehicleService from '../services/vehicleService';
 import { useAuth } from '../context/AuthContext';
 import './UserPanel.css';
@@ -34,6 +34,8 @@ const UserPanel = () => {
     const [registeredVehicle, setRegisteredVehicle] = useState(null);
     const [copied, setCopied] = useState(false);
     const [isSimulating, setIsSimulating] = useState(false);
+    const [emergencyStatus, setEmergencyStatus] = useState(false);
+
 
     // Simulation Loop
     useEffect(() => {
@@ -97,10 +99,13 @@ const UserPanel = () => {
                 smoking: data.telemetry.violations.includes('SMOKING') ? "Yes" : "No",
                 alcohol: data.telemetry.violations.includes('ALCOHOL') ? "Detected" : "Normal",
                 risk: data.telemetry.riskLevel,
-                x: (Math.random() - 0.5).toFixed(2),
-                y: (Math.random() - 0.5).toFixed(2),
-                z: (9.8 + (Math.random() - 0.5)).toFixed(2)
+                x: (data.telemetry?.accel?.x || (Math.random() - 0.5)).toFixed(2),
+                y: (data.telemetry?.accel?.y || (Math.random() - 0.5)).toFixed(2),
+                z: (data.telemetry?.accel?.z || (9.8 + (Math.random() - 0.5))).toFixed(2)
             }, ...prev.timeSeries];
+
+            setEmergencyStatus(data.telemetry.isEmergency);
+
 
             return {
                 ...prev,
@@ -149,6 +154,11 @@ const UserPanel = () => {
         subscribeToTelemetry((err, data) => {
             if (err) return;
             updateDashboard(data);
+        });
+
+        subscribeToEmergency((err, data) => {
+            if (err) return;
+            setEmergencyStatus(true);
         });
 
         return () => disconnectSocket();
@@ -215,6 +225,17 @@ const UserPanel = () => {
                     <StatCard icon={Zap} label="Speed" value={telemetry.speed} color="yellow" />
                     <StatCard icon={Thermometer} label="Temperature" value={telemetry.temp} color="red" />
                 </div>
+
+                {emergencyStatus && (
+                    <div className="emergency-banner heartbeat">
+                        <AlertTriangle size={24} />
+                        <div>
+                            <h4>CRITICAL EMERGENCY DETECTED</h4>
+                            <p>Accident condition detected. Emergency services and nearby admins are being notified.</p>
+                        </div>
+                    </div>
+                )}
+
 
                 {/* Time-Series Table */}
                 <div className="section card">

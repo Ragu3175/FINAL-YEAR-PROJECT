@@ -10,7 +10,19 @@ const vehicleSchema = new mongoose.Schema({
         coordinates: { type: [Number], default: [0, 0] } // [lon, lat]
     },
     lastSpeed: Number,
-    riskLevel: { type: String, enum: ['LOW', 'MEDIUM', 'HIGH'], default: 'LOW' },
+    lastAccel: {
+        x: { type: Number, default: 0 },
+        y: { type: Number, default: 0 },
+        z: { type: Number, default: 0 }
+    },
+    lastGyro: {
+        x: { type: Number, default: 0 },
+        y: { type: Number, default: 0 },
+        z: { type: Number, default: 0 }
+    },
+    lastWeight: { type: Number, default: 0 },
+    riskLevel: { type: String, enum: ['LOW', 'MEDIUM', 'ABOVE_MEDIUM', 'HIGH'], default: 'LOW' },
+    isEmergency: { type: Boolean, default: false },
 }, { timestamps: true });
 
 vehicleSchema.index({ lastLocation: '2dsphere' });

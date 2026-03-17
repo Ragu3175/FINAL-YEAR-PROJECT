@@ -347,4 +347,28 @@ tr:last-child td {
     .sensor-grid {
         grid-template-columns: 1fr;
     }
-}
+}
+
+/* Emergency Banner */
+.emergency-banner {
+    background: #450a0a;
+    border: 2px solid #ef4444;
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: white;
+}
+
+.emergency-banner h4 {
+    color: #fca5a5;
+    margin-bottom: 0.25rem;
+}
+
+.emergency-banner p {
+    font-size: 0.875rem;
+    color: #fee2e2;
+}
+

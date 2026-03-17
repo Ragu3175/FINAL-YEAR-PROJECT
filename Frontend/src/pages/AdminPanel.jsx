@@ -3,7 +3,7 @@ import { fleetData } from '../data/mockData'; // Assuming vehicleData is now fle
 import { MapPin, Users, ShieldAlert, Activity, AlertCircle, History, Car, Navigation, AlertTriangle } from 'lucide-react';
 import InteractiveMap from '../components/map/InteractiveMap';
 import ChatAssistant from '../components/chat/ChatAssistant';
-import { initiateSocketConnection, subscribeToTelemetry, subscribeToViolations, disconnectSocket } from '../services/socketService';
+import { initiateSocketConnection, subscribeToTelemetry, subscribeToViolations, subscribeToEmergency, disconnectSocket } from '../services/socketService';
 import './AdminPanel.css';
 
 const StatCard = ({ icon: Icon, label, value, color, change }) => (
@@ -26,6 +26,19 @@ const AdminPanel = () => {
     const [recentViolations, setRecentViolations] = useState(fleetData.recentViolations);
     const [stats, setStats] = useState(fleetData.stats);
     const [selectedVehicle, setSelectedVehicle] = useState(null);
+    const [emergencyAlerts, setEmergencyAlerts] = useState([]);
+    /* 
+    // Mock Emergency Alert for testing/screenshots:
+    const [emergencyAlerts, setEmergencyAlerts] = useState([{
+        id: 'test-emergency-123',
+        type: 'ACCIDENT_EMERGENCY',
+        vehicleId: 'SD-TEST-9999',
+        location: [77.5946, 12.9716],
+        severity: 'CRITICAL',
+        message: 'ALERT: Accident detected for vehicle TN-01-AB-1234! Priority emergency response required.',
+        time: new Date().toLocaleTimeString()
+    }]);
+    */
 
     useEffect(() => {
         initiateSocketConnection();
@@ -78,11 +91,90 @@ const AdminPanel = () => {
             }));
         });
 
+        subscribeToEmergency((err, data) => {
+            if (err) return;
+            
+            // Play alarm sound using Web Audio API (No external file needed)
+            playEmergencySound();
+
+            const newAlert = {
+                id: Date.now(),
+                ...data,
+                time: new Date().toLocaleTimeString()
+            };
+            setEmergencyAlerts(prev => [newAlert, ...prev]);
+
+            // Auto-hide alert after 30 seconds
+            setTimeout(() => {
+                setEmergencyAlerts(prev => prev.filter(a => a.id !== newAlert.id));
+            }, 30000);
+        });
+
         return () => disconnectSocket();
     }, []);
 
+    const playEmergencySound = () => {
+        try {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(440, audioCtx.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+            
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 1);
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 1);
+
+            // Repeat twice for "Beep Beep"
+            setTimeout(() => {
+                const osc2 = audioCtx.createOscillator();
+                osc2.type = 'sawtooth';
+                osc2.frequency.setValueAtTime(440, audioCtx.currentTime);
+                osc2.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.5);
+                osc2.connect(gainNode);
+                osc2.start();
+                osc2.stop(audioCtx.currentTime + 1);
+            }, 1200);
+        } catch (e) {
+            console.error("Audio playback failed", e);
+        }
+    };
+
     return (
         <div className="admin-container">
+            {/* Emergency Alerts Overlay */}
+            <div className="emergency-overlay">
+                {emergencyAlerts.map(alert => (
+                    <div key={alert.id} className="emergency-toast card critical heartbeat">
+                        <div className="alert-header">
+                            <ShieldAlert size={28} className="text-red" />
+                            <div className="alert-title">
+                                <h4>CRITICAL EMERGENCY</h4>
+                                <span>{alert.time}</span>
+                            </div>
+                            <button onClick={() => setEmergencyAlerts(prev => prev.filter(a => a.id !== alert.id))}>×</button>
+                        </div>
+                        <div className="alert-body">
+                            <p>{alert.message}</p>
+                            <div className="alert-actions">
+                                <button className="btn btn-danger" onClick={() => {
+                                    // Could open map at this location
+                                    setSelectedVehicle({ id: alert.vehicleId, location: alert.location });
+                                }}>Track Vehicle</button>
+                                <button className="btn btn-outline" onClick={() => setEmergencyAlerts(prev => prev.filter(a => a.id !== alert.id))}>Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
             <div className="admin-grid">
                 <div className="admin-left">
                     {/* Real Map Integration */}

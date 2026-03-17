@@ -1,6 +1,7 @@
 const Vehicle = require('../models/Vehicle');
 const Violation = require('../models/Violation');
-const { calculateRisk } = require('../services/riskService');
+const User = require('../models/User');
+const { calculateRisk, detectAccident } = require('../services/riskService');
 const crypto = require('crypto');
 
 exports.registerVehicle = async (req, res) => {
@@ -43,18 +44,28 @@ exports.registerVehicle = async (req, res) => {
 exports.updateVehicleData = async (req, res) => {
     try {
         const {
-            latitude, longitude, speed, mqValue, flexValue, irStatus
+            latitude, longitude, speed, mqValue, flexValue, irStatus,
+            accelX, accelY, accelZ, gyroX, gyroY, gyroZ, weight
         } = req.body;
 
-        const vehicle = req.vehicle; // Attached by verifyDevice middleware
+        const vehicle = req.vehicle;
 
-        // Update location and speed
+        // Update basic telemetry
         vehicle.lastLocation = { type: 'Point', coordinates: [longitude, latitude] };
         vehicle.lastSpeed = speed;
 
-        // Calculate risk
+        // Update advanced IMU & Weight telemetry
+        vehicle.lastAccel = { x: accelX || 0, y: accelY || 0, z: accelZ || 0 };
+        vehicle.lastGyro = { x: gyroX || 0, y: gyroY || 0, z: gyroZ || 0 };
+        vehicle.lastWeight = weight || 0;
+
+        // Calculate and update risk
         const { riskLevel, violations } = calculateRisk(req.body);
         vehicle.riskLevel = riskLevel;
+
+        // Detect Accident/Emergency
+        const isEmergency = detectAccident(req.body);
+        vehicle.isEmergency = isEmergency;
 
         await vehicle.save();
 
@@ -80,6 +91,10 @@ exports.updateVehicleData = async (req, res) => {
                 speed: speed,
                 riskLevel: riskLevel,
                 violations: violations,
+                isEmergency: isEmergency,
+                accel: vehicle.lastAccel,
+                gyro: vehicle.lastGyro,
+                weight: weight,
                 timestamp: new Date()
             },
             sensors: {
@@ -89,7 +104,6 @@ exports.updateVehicleData = async (req, res) => {
             }
         };
 
-        // Broadcast to all clients (or room based on user/admin)
         io.emit('telemetryUpdate', updatePayload);
 
         if (violations.length > 0) {
@@ -100,9 +114,35 @@ exports.updateVehicleData = async (req, res) => {
                 location: [longitude, latitude]
             });
         }
-        // ---------------------------------
 
-        res.json({ message: "Update successful", riskLevel, violations });
+        // EMERGENCY NOTIFICATION LOGIC
+        if (isEmergency) {
+            // Find admins within 5km radius [lon, lat]
+            const nearbyAdmins = await User.find({
+                role: 'ADMIN',
+                location: {
+                    $near: {
+                        $geometry: { type: "Point", coordinates: [longitude, latitude] },
+                        $maxDistance: 5000 // 5km
+                    }
+                }
+            });
+
+            const alertPayload = {
+                type: 'ACCIDENT_EMERGENCY',
+                vehicleId: vehicle.deviceId,
+                location: [longitude, latitude],
+                severity: 'CRITICAL',
+                message: `ALERT: Accident detected for vehicle ${vehicle.vehicleNumber}! Priority emergency response required.`
+            };
+
+            // Notify everyone for now, but in a real app we'd target specific admin socket rooms
+            io.emit('emergencyAlert', alertPayload);
+            
+            console.log(`Emergency alert sent to ${nearbyAdmins.length} nearby admins.`);
+        }
+
+        res.json({ message: "Update successful", riskLevel, violations, isEmergency });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

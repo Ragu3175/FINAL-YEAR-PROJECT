@@ -6,8 +6,15 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['USER', 'ADMIN'], default: 'USER' },
+    location: {
+        type: { type: String, enum: ['Point'], default: 'Point' },
+        coordinates: { type: [Number], default: [0, 0] } // [lon, lat]
+    },
     refreshToken: { type: String },
 }, { timestamps: true });
+
+userSchema.index({ location: '2dsphere' });
+
 
 // Hash password before save
 userSchema.pre('save', async function () {
