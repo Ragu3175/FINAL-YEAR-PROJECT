@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { fleetData } from '../data/mockData'; // Assuming vehicleData is now fleetData or contains it
+// import { fleetData } from '../data/mockData'; // Assuming vehicleData is now fleetData or contains it
 import { MapPin, Users, ShieldAlert, Activity, AlertCircle, History, Car, Navigation, AlertTriangle } from 'lucide-react';
 import InteractiveMap from '../components/map/InteractiveMap';
 import ChatAssistant from '../components/chat/ChatAssistant';
@@ -22,9 +22,15 @@ const StatCard = ({ icon: Icon, label, value, color, change }) => (
 );
 
 const AdminPanel = () => {
-    const [vehicles, setVehicles] = useState(fleetData.vehicles);
-    const [recentViolations, setRecentViolations] = useState(fleetData.recentViolations);
-    const [stats, setStats] = useState(fleetData.stats);
+    const [vehicles, setVehicles] = useState([]);
+    const [recentViolations, setRecentViolations] = useState([]);
+    const [stats, setStats] = useState({
+        totalVehicles: 0,
+        highRiskVehicles: 0,
+        alcoholViolations: 0,
+        seatbeltViolations: 0,
+        totalViolations: 0
+    });
     const [selectedVehicle, setSelectedVehicle] = useState(null);
     const [emergencyAlerts, setEmergencyAlerts] = useState([]);
     /* 

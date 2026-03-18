@@ -1,5 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { vehicleData as initialMockData } from '../data/mockData';
+// import { vehicleData as initialMockData } from '../data/mockData';
+
+const initialVehicleData = {
+    telemetry: {
+        lat: "--",
+        long: "--",
+        speed: "--",
+        temp: "--",
+        lastUpdate: "Waiting for data...",
+        status: "UNKNOWN",
+        accidentRisk: "--",
+    },
+    sensors: {
+        ir: "--",
+        mq: "--",
+        flex: "--",
+        loadCell: "--"
+    },
+    timeSeries: []
+};
 import { MapPin, Zap, Thermometer, Clock, Download, Trash2, ArrowRight, AlertTriangle, Plus, Key, Copy, Check } from 'lucide-react';
 import TelemetryCharts from '../components/charts/TelemetryCharts';
 import ChatAssistant from '../components/chat/ChatAssistant';
@@ -23,7 +42,7 @@ const StatCard = ({ icon: Icon, label, value, color }) => (
 
 const UserPanel = () => {
     const { user } = useAuth();
-    const [liveVehicleData, setLiveVehicleData] = useState(initialMockData);
+    const [liveVehicleData, setLiveVehicleData] = useState(initialVehicleData);
     const { telemetry, sensors, timeSeries } = liveVehicleData;
 
     // Vehicle Registration State
@@ -89,44 +108,50 @@ const UserPanel = () => {
     }, [isSimulating]);
 
     const updateDashboard = (data) => {
+        if (!data || !data.telemetry) return;
+
         setLiveVehicleData(prev => {
+            const violations = data.telemetry.violations || [];
+            const sensors = data.sensors || {};
+            const speed = data.telemetry.speed || 0;
+            const riskLevel = data.telemetry.riskLevel || 'UNKNOWN';
+
             const newTimeSeries = [{
                 time: new Date().toLocaleTimeString(),
-                speed: data.telemetry.speed.toFixed(2),
-                overspeeding: data.telemetry.violations.includes('OVERSPEED') ? "Yes" : "No",
-                seatbelt: data.telemetry.violations.includes('SEATBELT') ? "Not Worn" : "Worn",
-                eyeStatus: data.telemetry.violations.includes('DROWSY') ? "Closed" : "Open",
-                smoking: data.telemetry.violations.includes('SMOKING') ? "Yes" : "No",
-                alcohol: data.telemetry.violations.includes('ALCOHOL') ? "Detected" : "Normal",
-                risk: data.telemetry.riskLevel,
-                x: (data.telemetry?.accel?.x || (Math.random() - 0.5)).toFixed(2),
-                y: (data.telemetry?.accel?.y || (Math.random() - 0.5)).toFixed(2),
-                z: (data.telemetry?.accel?.z || (9.8 + (Math.random() - 0.5))).toFixed(2)
+                speed: speed.toFixed(2),
+                overspeeding: violations.includes('OVERSPEED') ? "Yes" : "No",
+                seatbelt: violations.includes('SEATBELT') ? "Not Worn" : "Worn",
+                eyeStatus: violations.includes('DROWSY') ? "Closed" : "Open",
+                smoking: violations.includes('SMOKING') ? "Yes" : "No",
+                alcohol: violations.includes('ALCOHOL') ? "Detected" : "Normal",
+                risk: riskLevel,
+                x: (data.telemetry.accel?.x || 0).toFixed(2),
+                y: (data.telemetry.accel?.y || 0).toFixed(2),
+                z: (data.telemetry.accel?.z || 9.8).toFixed(2)
             }, ...prev.timeSeries];
 
-            setEmergencyStatus(data.telemetry.isEmergency);
-
+            setEmergencyStatus(Boolean(data.telemetry.isEmergency));
 
             return {
                 ...prev,
                 telemetry: {
                     ...prev.telemetry,
-                    lat: data.telemetry.lat,
-                    long: data.telemetry.long,
-                    speed: `${data.telemetry.speed.toFixed(2)} km/h`,
-                    temp: data.telemetry.temp !== undefined ? `${data.telemetry.temp}°C` : 'N/A',
-                    status: data.telemetry.riskLevel,
+                    lat: data.telemetry.lat || prev.telemetry.lat,
+                    long: data.telemetry.long || prev.telemetry.long,
+                    speed: `${speed.toFixed(2)} km/h`,
+                    temp: data.telemetry.temp !== undefined ? `${data.telemetry.temp}°C` : (prev.telemetry.temp || 'N/A'),
+                    status: riskLevel,
                     accidentRisk:
-                        data.telemetry.riskLevel === 'HIGH' ? '95%' :
-                            data.telemetry.riskLevel === 'ABOVE_MEDIUM' ? '65%' :
-                                data.telemetry.riskLevel === 'MEDIUM' ? '30%' : '5%',
+                        riskLevel === 'HIGH' ? '95%' :
+                            riskLevel === 'ABOVE_MEDIUM' ? '65%' :
+                                riskLevel === 'MEDIUM' ? '30%' : '5%',
                     lastUpdate: "Just now"
                 },
                 sensors: {
-                    ir: data.sensors.ir === 0 ? "Drowsy" : "Normal",
-                    mq: `${data.sensors.mq} ppm`,
-                    flex: `${data.sensors.flex}`,
-                    loadCell: `${data.telemetry.weight !== undefined ? data.telemetry.weight : (data.sensors.weight || 0)} kg`
+                    ir: sensors.ir === 0 ? "Drowsy" : (sensors.ir === 1 ? "Normal" : "--"),
+                    mq: sensors.mq !== undefined ? `${sensors.mq} ppm` : '--',
+                    flex: sensors.flex !== undefined ? `${sensors.flex}` : '--',
+                    loadCell: `${data.telemetry.weight !== undefined ? data.telemetry.weight : (sensors.weight || 0)} kg`
                 },
                 timeSeries: newTimeSeries.slice(0, 50)
             };
@@ -345,13 +370,13 @@ const UserPanel = () => {
                             <Trash2 size={16} />
                             Clear table
                         </button>
-                        <button
+                        {/* <button
                             className={`btn ${isSimulating ? 'btn-danger' : 'btn-primary'}`}
                             onClick={() => setIsSimulating(!isSimulating)}
                         >
                             <Zap size={16} />
                             {isSimulating ? 'Stop Simulator' : 'Start Simulator'}
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
