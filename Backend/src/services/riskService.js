@@ -50,7 +50,7 @@ function calculateRisk(sensorData) {
         violations.push('SEATBELT');
     }
     // Drowsiness detection (IR Sensor)
-    if (sensorData.irStatus === 1) {
+    if (sensorData.irStatus === 0) {
         violations.push('DROWSY');
     }
 

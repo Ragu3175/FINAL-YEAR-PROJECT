@@ -64,14 +64,14 @@ const UserPanel = () => {
                 const randomSpeed = Math.floor(Math.random() * 100);
                 const randomMq = Math.floor(Math.random() * 4000);
                 const randomFlex = Math.floor(Math.random() * 1000);
-                const randomIr = Math.random() > 0.8 ? 1 : 0;
+                const randomIr = Math.random() > 0.8 ? 0 : 1;
 
                 const violations = [];
                 if (randomSpeed > 80) violations.push('OVERSPEED');
                 if (randomMq > 1800 && randomMq <= 3000) violations.push('ALCOHOL');
                 if (randomMq > 3000) violations.push('SMOKING');
                 if (randomFlex <= 340) violations.push('SEATBELT');
-                if (randomIr === 1) violations.push('DROWSY');
+                if (randomIr === 0) violations.push('DROWSY');
 
                 let riskLevel = 'LOW';
                 const totalCount = violations.length;
@@ -121,7 +121,7 @@ const UserPanel = () => {
                 speed: speed.toFixed(2),
                 overspeeding: violations.includes('OVERSPEED') ? "Yes" : "No",
                 seatbelt: sensors.flex !== undefined ? (sensors.flex <= 340 ? "Not Worn" : "Worn") : (violations.includes('SEATBELT') ? "Not Worn" : "Worn"),
-                eyeStatus: sensors.ir !== undefined ? (sensors.ir === 1 ? "Closed" : "Open") : (violations.includes('DROWSY') ? "Closed" : "Open"),
+                eyeStatus: sensors.ir !== undefined ? (sensors.ir === 0 ? "Closed" : "Open") : (violations.includes('DROWSY') ? "Closed" : "Open"),
                 smoking: violations.includes('SMOKING') ? "Yes" : "No",
                 alcohol: violations.includes('ALCOHOL') ? "Detected" : "Normal",
                 risk: riskLevel,
@@ -148,7 +148,7 @@ const UserPanel = () => {
                     lastUpdate: "Just now"
                 },
                 sensors: {
-                    ir: sensors.ir === 1 ? "Drowsy" : (sensors.ir === 0 ? "Normal" : "--"),
+                    ir: sensors.ir === 0 ? "Drowsy" : (sensors.ir === 1 ? "Normal" : "--"),
                     mq: sensors.mq !== undefined ? `${sensors.mq} ppm` : '--',
                     flex: sensors.flex !== undefined ? `${sensors.flex}` : '--',
                     loadCell: `${data.telemetry.weight !== undefined ? data.telemetry.weight : (sensors.weight || 0)} kg`
