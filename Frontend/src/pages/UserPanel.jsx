@@ -64,14 +64,14 @@ const UserPanel = () => {
                 const randomSpeed = Math.floor(Math.random() * 100);
                 const randomMq = Math.floor(Math.random() * 4000);
                 const randomFlex = Math.floor(Math.random() * 1000);
-                const randomIr = Math.random() > 0.8 ? 0 : 1;
+                const randomIr = Math.random() > 0.8 ? 1 : 0;
 
                 const violations = [];
                 if (randomSpeed > 80) violations.push('OVERSPEED');
                 if (randomMq > 1800 && randomMq <= 3000) violations.push('ALCOHOL');
                 if (randomMq > 3000) violations.push('SMOKING');
-                if (randomFlex < 700) violations.push('SEATBELT');
-                if (randomIr === 0) violations.push('DROWSY');
+                if (randomFlex <= 340) violations.push('SEATBELT');
+                if (randomIr === 1) violations.push('DROWSY');
 
                 let riskLevel = 'LOW';
                 const totalCount = violations.length;
@@ -148,7 +148,7 @@ const UserPanel = () => {
                     lastUpdate: "Just now"
                 },
                 sensors: {
-                    ir: sensors.ir === 0 ? "Drowsy" : (sensors.ir === 1 ? "Normal" : "--"),
+                    ir: sensors.ir === 1 ? "Drowsy" : (sensors.ir === 0 ? "Normal" : "--"),
                     mq: sensors.mq !== undefined ? `${sensors.mq} ppm` : '--',
                     flex: sensors.flex !== undefined ? `${sensors.flex}` : '--',
                     loadCell: `${data.telemetry.weight !== undefined ? data.telemetry.weight : (sensors.weight || 0)} kg`

@@ -46,11 +46,11 @@ function calculateRisk(sensorData) {
         violations.push('SMOKING');
     }
     // Seatbelt detection (Flex Sensor)
-    if (sensorData.flexValue < 700) {
+    if (sensorData.flexValue <= 340) {
         violations.push('SEATBELT');
     }
     // Drowsiness detection (IR Sensor)
-    if (sensorData.irStatus === 0) {
+    if (sensorData.irStatus === 1) {
         violations.push('DROWSY');
     }
 
