@@ -381,7 +381,7 @@ const UserPanel = () => {
                 </div>
             </div>
 
-            <ChatAssistant role="user" />
+            <ChatAssistant role="user" contextData={{ liveVehicleData, emergencyStatus }} />
 
             {/* Registration Modal overlay moved here so it works over the dashboard */}
             {showRegisterModal && (

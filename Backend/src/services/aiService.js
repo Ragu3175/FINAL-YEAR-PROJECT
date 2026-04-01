@@ -46,28 +46,38 @@ console.log('Groq API Key Status:', groqApiKey ? `Present (${groqApiKey.substrin
 /**
  * Generate a response using AI (Primary: Groq, Fallback: Gemini)
  */
-const generateResponse = async (userPrompt, projectContext = '') => {
+const generateResponse = async (userPrompt, dashboardContext = null, dbHistoryContext = null) => {
     try {
-        // If no context provided, try to read README.md
-        let finalContext = projectContext;
-        if (!finalContext) {
-            const readmePath = path.join(__dirname, '../../../README.md');
-            if (fs.existsSync(readmePath)) {
-                finalContext = fs.readFileSync(readmePath, 'utf8');
-            }
+        let finalContext = '';
+        const readmePath = path.join(__dirname, '../../../README.md');
+        if (fs.existsSync(readmePath)) {
+            finalContext = fs.readFileSync(readmePath, 'utf8');
         }
 
         const fullSystemPrompt = `System: You are SafeDrive AI Assistant, a helpful AI integrated into the SafeDrive AI project.
-Your goal is to help users understand the project, its features, and how it works.
+Your goal is to help users understand the project, its features, and monitor live vehicle telemetry.
 
-CRITICAL CONTEXT ABOUT THE PROJECT:
+CRITICAL PROJECT CONTEXT:
 ${finalContext}
+
+---
+
+LIVE DASHBOARD CONTEXT (Current real-time data visible to user):
+${dashboardContext ? JSON.stringify(dashboardContext, null, 2) : 'No live data available currently.'}
+
+---
+
+DATABASE HISTORY CONTEXT (Recent violations and history for querying):
+${dbHistoryContext || 'No recent history found.'}
+
+---
 
 GUIDELINES:
 1. Be concise, professional, and friendly.
-2. If a user asks about features, sensors, or tech stack, refer to the provided context.
-3. If you don't know the answer based on the context, politely say so.
-4. Use markdown for better readability.`;
+2. If a user asks about their current speed, sensor readings, or status, refer strictly to the LIVE DASHBOARD CONTEXT.
+3. If they ask about past history, previous violations, refer strictly to the DATABASE HISTORY CONTEXT.
+4. If you don't know the answer based on the context, politely say so.
+5. Use markdown for better readability.`;
 
         console.log('Generating AI Response for prompt...');
 

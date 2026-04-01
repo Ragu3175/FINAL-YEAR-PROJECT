@@ -7,11 +7,11 @@ const API_URL = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api`
  * @param {string} message - User message
  * @returns {Promise<string>} - AI response
  */
-export const sendMessage = async (message) => {
+export const sendMessage = async (message, contextData = null) => {
     try {
         const token = localStorage.getItem('token');
         const response = await axios.post(`${API_URL}/chat`,
-            { message },
+            { message, contextData },
             {
                 headers: {
                     'Authorization': `Bearer ${token}`

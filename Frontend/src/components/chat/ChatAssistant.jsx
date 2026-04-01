@@ -4,7 +4,7 @@ import { chatResponses } from '../../data/mockData';
 import { sendMessage as sendChatMessage } from '../../services/chatService';
 import './ChatAssistant.css';
 
-const ChatAssistant = ({ role = 'user' }) => {
+const ChatAssistant = ({ role = 'user', contextData = null }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
         { id: 1, text: role === 'user' ? chatResponses.user : chatResponses.admin, sender: 'assistant' }
@@ -32,7 +32,7 @@ const ChatAssistant = ({ role = 'user' }) => {
         setIsLoading(true);
 
         try {
-            const reply = await sendChatMessage(userMsgText);
+            const reply = await sendChatMessage(userMsgText, contextData);
             setMessages(prev => [...prev, {
                 id: Date.now() + 1,
                 text: reply,
