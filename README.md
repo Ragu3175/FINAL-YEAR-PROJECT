@@ -1,4 +1,4 @@
-# SafeDrive AI: Intelligent Fleet & Vehicle Monitoring System
+# ntelligent Fleet & Vehicle Monitoring System
 
 ## 1. Project Overview
 SafeDrive AI is a comprehensive, real-time Internet of Things (IoT) platform designed to enhance road safety, monitor driver behavior, and provide live fleet tracking. The system seamlessly integrates custom ESP32 hardware with a modern MERN stack web application to detect, report, and visualize critical telemetry and sensor data from vehicles.
